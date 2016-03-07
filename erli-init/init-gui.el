@@ -1,8 +1,6 @@
 (when (fboundp 'tool-bar-mode)
   (tool-bar-mode -1))
 
-(menu-bar-mode -1)
-
 (require 'beacon)
 (beacon-mode +1)
 
@@ -20,7 +18,7 @@
 
 (setq initial-scratch-message nil)
 
-(line-number-mode t)
+(linum-mode t)
 (column-number-mode t)
 (size-indication-mode t)
 
