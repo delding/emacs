@@ -3,15 +3,11 @@
       desktop-auto-save-timeout 600)
 (desktop-save-mode t)
 
-;;----------------------------------------------------------------------------
 ;; Restore histories and registers after saving
-;;----------------------------------------------------------------------------
 (setq-default history-length 1000)
 (savehist-mode t)
 
-;; need to install package session.el
 (require 'session)
-
 (setq session-save-file (expand-file-name ".session" user-emacs-directory))
 (add-hook 'after-init-hook 'session-initialize)
 
@@ -45,10 +41,5 @@
                 (shell-command-history    . 50)
                 tags-file-name
                 tags-table-list)))
-
-;; need to install package frame-restore.el
-(require 'frame-restore)
-(frame-restore)
-
 
 (provide 'init-sessions)

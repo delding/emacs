@@ -1,9 +1,16 @@
-;;Each line of text should be at most 80 characters long
-(setq default-fill-column 80) 
+;; provides company completion wih C/C++ headers
+(require 'company-c-headers)
+(add-to-list 'company-backends 'company-c-headers)
+;; to provide project local header source, use company-c-headers-path-user instead
+(add-to-list 'company-c-headers-path-system "/usr/local/Cellar/gcc5/5.3.0/lib/gcc/5/gcc/x86_64-apple-darwin15.3.0/5.3.0/include")
 
-(require 'cc-mode)
+;; flycheck google cpplint
+(require 'flycheck-google-cpplint)
+(custom-set-variables
+ '(flycheck-c/c++-googlelint-executable "/usr/local/bin/cpplint"))
+;; add google c++ style checker after cppcheck
+(flycheck-add-next-checker 'c/c++-cppcheck '(warning . c/c++-googlelint))
 
-;; Use Google's C/C++ Style:
 (require 'google-c-style)
 (add-hook 'c-mode-common-hook 'google-set-c-style)
 (add-hook 'c-mode-common-hook 'google-make-newline-indent)
@@ -11,55 +18,28 @@
 ;; Treat files ending in .h as c++ files
 (add-to-list 'auto-mode-alist '("\\.h\\'" . c++-mode))
 
-;;Recognize standard c++ header files with no file extension
-(require 'cl)
+;; smartparens configure for c++
+(sp-with-modes '(c-mode c++-mode)
+  (sp-local-pair "{" nil :post-handlers '(("||\n[i]" "RET")))
+  (sp-local-pair "/*" "*/" :post-handlers '((" | " "SPC")
+                                            ("* ||\n[i]" "RET"))))
 
-(defun file-in-directory-list-p (file dirlist)
-  "Returns true if the file specified is contained within one of
-the directories in the list. The directories must also exist."
-  (let ((dirs (mapcar 'expand-file-name dirlist))
-        (filedir (expand-file-name (file-name-directory file))))
-    (and
-     (file-directory-p filedir)
-     (member-if (lambda (x) ; Check directory prefix matches
-                  (string-match (substring x 0 (min(length filedir) (length x))) filedir))
-                dirs))))
-
-(defun buffer-standard-include-p ()
-  "Returns true if the current buffer is contained within one of
-the directories in the INCLUDE environment variable."
-  (and (getenv "INCLUDE")
-       (file-in-directory-list-p buffer-file-name (split-string (getenv "INCLUDE") path-separator))))
-
-(add-to-list 'magic-fallback-mode-alist '(buffer-standard-include-p . c++-mode))
-
-(require 'cedet)
-;; Activate semantic
-(add-to-list 'semantic-default-submodes 'global-semantic-idle-scheduler-mode)
-(add-to-list 'semantic-default-submodes 'global-semanticdb-minor-mode)
-;(add-to-list 'semantic-default-submodes 'global-semantic-idle-summary-mode)
-;(add-to-list 'semantic-default-submodes 'global-semantic-idle-completions-mode)
-;(add-to-list 'semantic-default-submodes 'global-semantic-highlight-func-mode)
-;(add-to-list 'semantic-default-submodes 'global-semantic-decoration-mode)
-;(add-to-list 'semantic-default-submodes 'global-semantic-stickyfunc-mode)
-;(add-to-list 'semantic-default-submodes 'global-semantic-mru-bookmark-mode)
+;; turn on semantic
 (semantic-mode 1)
+(global-semantic-idle-scheduler-mode 1)
+(global-semanticdb-minor-mode 1)
 
-;; not using names completion
-;(require 'semantic/ia)
+;; use projectile for project management
+;; TODO: projectile configure
 
-;; load speedbar
-(require 'sr-speedbar)
+;; TODO: irony-mode
 
-;; Activate ede mode
-(global-ede-mode t)
-
-;; add gcc headers to system include files
-(require 'semantic/bovine/gcc)
-
-;; Load ecb mode
-(require 'ecb-autoloads)
-(setq ecb-tip-of-the-day nil)
+;; makefile, need to use tabs as indent
+(defun cpp-makefile-mode-defaults ()
+  (whitespace-toggle-options '(tabs))
+  (setq indent-tabs-mode t ))
+(setq cpp-makefile-mode-hook 'cpp-makefile-mode-defaults)
+(add-hook 'makefile-mode-hook (lambda ()
+                                (run-hooks 'cpp-makefile-mode-hook)))
 
 (provide 'init-cpp)
-
